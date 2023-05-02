@@ -90,50 +90,43 @@
       function mostrarCines() {
         //hacemos la llamada de la API
         var xhr = new XMLHttpRequest();
-        var resultado; // declaramos la variable aquí
-        var objeto;
-
-        xhr.addEventListener("readystatechange", function () {
-          if (this.readyState === this.DONE) {
-            if (this.status === 200) {
-              resultado = JSON.parse(this.responseText); // asignamos el valor aquí
-            }
-          }
-        });
         xhr.open("GET", "https://dades.eicub.net/api/1/cinemes-inventari");
         xhr.send(null);
 
-        // movemos el bucle for dentro del bloque if
-        xhr.onload = function () {
-          for (let index = 0; index < resultado.length; index++) {
-            var objeto = resultado[index];
-            console.log(objeto.Equipament, objeto.Latitud, objeto.Longitud);
+        xhr.onreadystatechange = function () {
+          if (this.readyState === 4 && this.status === 200) {
+            var resultado = JSON.parse(this.responseText);
 
-            var name = objeto.Equipament;
-            var lat = objeto.Latitud;
-            var lon = objeto.Longitud;
+            resultado.forEach(function (objeto) {
+              console.log(objeto.Equipament, objeto.Latitud, objeto.Longitud);
 
-            var addMark = new OpenLayers.LonLat(lon, lat).transform(
-              new OpenLayers.Projection("EPSG:4326"),
-              map.getProjectionObject()
-            );
+              var name = objeto.Equipament;
+              var lat = objeto.Latitud;
+              var lon = objeto.Longitud;
 
-            var marker = new OpenLayers.Marker(addMark);
-            marker.events.register("mousedown", marker, function () {
-              var popup = new OpenLayers.Popup(
-                "popup",
-                addMark,
-                new OpenLayers.Size(200, 50),
-                "<div>" + name + "</div>",
-                true
+              var addMark = new OpenLayers.LonLat(lon, lat).transform(
+                new OpenLayers.Projection("EPSG:4326"),
+                map.getProjectionObject()
               );
-              map.addPopup(popup);
+
+              var marker = new OpenLayers.Marker(addMark);
+              marker.events.register("mousedown", marker, function () {
+                var popup = new OpenLayers.Popup(
+                  "popup",
+                  addMark,
+                  new OpenLayers.Size(200, 50),
+                  "<div>" + name + "</div>",
+                  true
+                );
+                map.addPopup(popup);
+              });
+              markers.addMarker(marker);
+              map.setCenter(addMark, 13);
             });
-            markers.addMarker(marker);
-            map.setCenter(addMark, 13);
           }
         };
       }
+
       //Usamos la variable anteriormente creada a la que le pasamos el var que sera un maracador
       markers.addMarker(marker);
       map.setCenter(lonLat, zoom);
